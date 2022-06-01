@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Hang Man</title>
+        <link href="{% static 'hangman/styles.css' %}" rel="stylesheet">
+    </head>
+    <body>
+        <h1>Hangman Game</h1>
+        <div class="word" >
+            {% for letter in word %}
+                <div class="wordLetter">{{letter}}</div>
+            {% endfor %}
+        </div>
+        <div class="lettersGroup">
+            {% for letter in letters %}
+                <div class="letter">{{letter}}</div>
+            {% endfor %}
+        </div>
+    </body>
+</html>
