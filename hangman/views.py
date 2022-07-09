@@ -1,13 +1,16 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from .models import Word
 
 
 
 # Create your views here.
 
-letters = ['a','b','c','d','e','f','g','h','i','j','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-word = ['M','e','u','t','s','c','h','l','a','n','d']
+w = Word.objects.first().__str__()
+
+
+letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 
 
 def index(request):
-    return render(request,"hangman/index.html",{'letters':letters , 'word':word})
+    return render(request,"hangman/index.html",{'letters':letters , 'word':w})
