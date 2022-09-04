@@ -3,60 +3,30 @@
 <html lang="en">
     <head>
         <title>Hang Man</title>
-        <script src="{% static 'hangman/app.js' %}"></script> 
-        <script type="text/javascript">
-            document.addEventListener("DOMContentLoaded", () => {
-                document.addEventListener('keypress', logKey);
-
-                var r = "{{word}}";
-                r.toUpperCase();
-                var htmlEl = document.querySelector(".word");
-                for(var i = 0; i< r.length ;i++ ){
-                    var letter = document.createElement("div");
-                    letter.innerHTML =  r.charAt(i);
-                    letter.classList.add("gmLetter");
-                    htmlEl.append(letter);
-                }      
-
-                function logKey(e) {
-                    var still = 0;
-                    document.querySelectorAll('.letter').forEach(letter => {
-                        if(e.key.toUpperCase() === letter.innerHTML){
-                            letter.style.color = 'red';
-                            document.querySelectorAll('.gmLetter').forEach(gl => {
-                                console.log('gl', gl);
-                                if(e.key.toUpperCase() === gl.innerHTML.toUpperCase()){
-                                    gl.style.color = 'red';
-                                }
-                                if(gl.style.color != 'red'){
-                                    still++;
-                                }
-                            })
-                        }                        
-                    });
-                    console.log(still);
-                    if(still === 0){
-                        alert('Winner Winner Chicken Dinner!!');
+        <!-- <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded',()=> {
+                document.querySelector('#newGame').onclick = function(){
+                    if(document.querySelector('#name').value != ""){
+                        var name = document.querySelector('#name').value;
+                        window.open(`newgame/${name}`,true);
+                    }
+                    else{
+                        alert('name can not be empty');
                     }
                 }
-
-                document.querySelectorAll('.gmLetter').forEach(l => {
-                    l.style.color= 'lightblue';});
-            });
-            
-            
-        </script>
+            })
+        </script> -->
         <link href="{% static 'hangman/styles.css' %}" rel="stylesheet">
     </head>
     <body>
-        <h1>Hangman Game</h1>
-        <div class="word" >
-            
-        </div>
-        <div class="lettersGroup">
-            {% for letter in letters %}
-                <div class="letter">{{letter}}</div>
-            {% endfor %}
-        </div>
+        <h1>please enter your username</h1>
+        {% if message %}
+        <h3 style="color: red" >{{ message }}</h3>
+        {% endif %}
+        <form action="{% url 'newGame' %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Username" required="True">
+            <input type="submit">
+        </form>
     </body>
 </html>

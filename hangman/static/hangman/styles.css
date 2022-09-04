@@ -33,3 +33,7 @@
     flex-wrap: wrap;
     font-size: 50px;
 }
+.PlayBtn{
+    width: 50px;
+    height: 25px;
+}
