@@ -17,10 +17,12 @@ class Player(models.Model):
     
 class Game(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    duration = models.IntegerField()
-    tryes = models.IntegerField()
-    date = models.DateField()
-    result = models.BooleanField()
+    duration = models.CharField(max_length=5)
+    attempts = models.CharField(max_length=4)
+    rightAttempts = models.CharField(max_length=4)
+    wrongAttempts = models.CharField(max_length=4)
+    date = models.DateTimeField()
+    result = models.CharField(max_length=4)
     
     def __str__(self):
-        return f"{self.id, self.player, self.duration, self.tryes, self.date, self.result}"
+        return f"{self.id, self.player, self.duration, self.attempts, self.date, self.result}"

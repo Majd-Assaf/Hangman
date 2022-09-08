@@ -1,9 +1,6 @@
-from os import stat
+import datetime
 import random
-from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
-from django.http import Http404, HttpResponseRedirect, HttpResponse
-from django.urls import reverse
 from .models import Word,Player,Game
 from django.contrib.auth.models import User
 
@@ -14,34 +11,25 @@ from django.contrib.auth.models import User
 
 
 
-letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-s = Word.objects.first()
-
+letters = ['A','Ä','B','C','D','E','F','G','H','I','J','K','L','M','N','O','Ö','P','Q','R','S','T','U','Ü','V','W','X','Y','Z']
 
 def index(request):        
     return render(request,"hangman/index.html")
 
 def newGame(request):
     if request.method == 'POST':
-        lsPlayerGames = [] 
-        gCount = 0
         name = request.POST['username']
+        isTime = request.POST.get('isTimeCounted', False)
         players = Player.objects.all()
         player = Player()
         for p in players:
             if p.userName == name:
                 player = Player.objects.get(userName = name)
-                lsPlayerGames = Game.objects.filter(player = player)
-                
-        if player is None:
-            user = Player(name)
-            user.save()
-    
-    if lsPlayerGames.count() > 0 :
-        gCount = lsPlayerGames.count()
-        
+        if player is not None:
+            player.userName= name
+            player.save()
             
-    gameWord = "?"
+    gameWord = ""
     words=[]
     word = Word.objects.all()
     for w in word:
@@ -49,31 +37,59 @@ def newGame(request):
     w = random.randint(0,len(words) -1)
     gameWord = words[w]
     
-    return render(request,"hangman/game.html",{'letters':letters, 'word':gameWord, 'gamesCount':gCount,'playerName':name , 'request':request})
+    return render(request,"hangman/game.html",{'letters':letters, 'word':gameWord, 'isTimeCounted':isTime,'playerName':name})
     
 
-def savegame(request,name, duration, tries, state):
-    #hier where you save the game in th db
-    #ask for new game
-    # if request.method == 'POST':
-    #     name = request.POST['name']
-    #     duration = request.POST["duration"]
-    #     tries = request.POST["tries"]
-    #     state = request.POST["state"]
-    #     return render(request, "index.html", {
-    #             "message": name
-    #     })
-    player = Player.objects.get(userName = name)
-    game = Game()
-    game.player = player
-    game.duration = duration
-    game.tryes = tries
-    game.result = state
-    game.save()
-    
-    lsPlayerGames = Game.objects.filter(player = player)
-    
-    return HttpResponse(lsPlayerGames)
+def savegame(request):
+    if request.method == 'POST':
+        
+        name = request.POST['username']
+        duration =request.POST.get('duration','0')
+        attempts = request.POST.get('attempts','0')
+        result =request.POST.get('result','NO Info')
+        rightAttempts = request.POST.get('rightAttempts','0')
+        isTimeCounted = request.POST.get('isTimeCounted', False)
+
+        players = Player.objects.all()
+        player = Player()
+        for p in players:
+            if p.userName == name:
+                player = Player.objects.get(userName = name)
+        
+        duration = 29 - int(duration)
+        wrongAttempts = int(attempts) - int(rightAttempts)
+        
+        if isTimeCounted != False :
+            isTimeCounted ='time count mode'
+        else:
+            isTimeCounted ='no time mode'
+            duration= '0'
+        
+                
+        game = Game()
+        game.player = player
+        game.duration = str(duration)
+        game.attempts = attempts
+        game.rightAttempts = rightAttempts
+        game.wrongAttempts = str(wrongAttempts)
+        game.date = datetime.datetime.now()
+        game.result = result
+        if game is not None:
+           game.save()
+        
+        
+        lsPlayerGames = []
+        PlayerGames = Game.objects.filter(player = player)
+        
+        for game in PlayerGames:
+            lsPlayerGames.append(game)
+        
+        return render(request,"hangman/index.html", {
+            'games':lsPlayerGames,
+            'name':name,
+            'result':result,
+            'isTimeCounted':isTimeCounted
+        })
     
       
 

@@ -5,14 +5,17 @@
         <title>Hang Man</title>
         <script src="{% static 'hangman/app.js' %}"></script> 
         <script type="text/javascript">
-            let triesCounter = 0
+            let attemptsCounter = 0
+            let rightAttempts = 0;
             let isSolved = false;
             let gmDuration = 0;
             var intervalID;
+            var isTimeCounted = "{{isTimeCounted}}"
 
-            function startTimer(duration, display) {
+
+            if(isTimeCounted != "False"){
+                function startTimer(duration, display) {
                 var timer = duration, minutes, seconds;
-                console.log(timer);
                 intervalID = setInterval(function () {
                                 minutes = parseInt(timer / 60, 10);
                                 seconds = parseInt(timer % 60, 10);
@@ -29,58 +32,58 @@
 
                                 }
                             }, 1000);
-            }
+                }
 
-            function stopTimer(timer){
-                clearInterval(intervalID);
-                console.log("stop timer",timer);
+                function stopTimer(timer){
+                    clearInterval(intervalID);
+                }
+                window.onload = function () {
+                    var twoMinutes = 60 /2,
+                        display = document.querySelector('#time');
+                        display.style.display = 'block';
+                    startTimer(twoMinutes, display);
+                };
             }
-            window.onload = function () {
-                var twoMinutes = 60 /2,
-                    display = document.querySelector('#time');
-                startTimer(twoMinutes, display);
-            };
             
             document.addEventListener("DOMContentLoaded", () => {
 
                 document.addEventListener('keypress', logKey);
 
                 var r = "{{word}}";
-                console.log("html Word : ",r);
                 r.toUpperCase();
                 var htmlEl = document.querySelector(".word");
                 
                 
-
+                let attempts =0;
                 for(var i = 0; i< r.length ;i++ ){
                     var letter = document.createElement("div");
                     letter.innerHTML =  r.charAt(i);
                     letter.classList.add("gmLetter");
                     htmlEl.append(letter);
+                    attempts++;
                 }      
 
                 function logKey(e) {
-                    var still = 0;
-                    triesCounter++;
+                    
+                    attemptsCounter++;
                     document.querySelectorAll('.letter').forEach(letter => {
                         if(e.key.toUpperCase() === letter.innerHTML){
                             letter.style.color = 'red';
                             document.querySelectorAll('.gmLetter').forEach(gl => {
                                 if(e.key.toUpperCase() === gl.innerHTML.toUpperCase()){
                                     gl.style.color = 'red';
-                                }
-                                if(gl.style.color != 'red'){
-                                    still++;
+                                    attempts--;
+                                    rightAttempts++;
                                 }
                             })
                         }                        
                     });
-                    if(still === 0){
-                        alert('solved!');
+                    if(attempts <= 0){
                         isSolved = true;
+                        gameEnd();
                     }
-                    if(triesCounter >= r.length){
-                        alert('Game Over!!');
+                    if(isTimeCounted == 'False' && attemptsCounter >= 10){
+                        gameEnd();
                     }
                 }
 
@@ -89,28 +92,27 @@
             });
 
             function gameEnd(){
-                let  name
-                name= "{{playerName}}";
+                let name= "{{playerName}}";
+                let result = isSolved === false? "Lose":"Win";
 
-                fetch(`savegame/${name}/${gmDuration}/${triesCounter}/${isSolved}`)
-                .then(response => response.text())
-                .then(text => {
-                    console.log(text);
-                    document.querySelector('#content').innerHTML= text;
-                });            
-
+                document.getElementById("username").value = name;
+                document.getElementById("duration").value =  gmDuration;
+                document.getElementById("attempts").value = attemptsCounter;
+                document.getElementById("rightAttempts").value = rightAttempts;
+                document.getElementById("result").value = result;
+                document.getElementById("isTimeCounted").value = isTimeCounted.toString();
+                document.forms['submitForm'].submit();
             }
         </script>
         <link href="{% static 'hangman/styles.css' %}" rel="stylesheet">
     </head>
     <body>
-        <div id="content" >
-            <div id="header" >
-                <div class="name">{{playerName}}</div>
-                <div class="geams">Spieleanzahl : {{gamesCount}}</div>
-                <div><span id="time">00:30</span> minutes!</div>
-            </div>
+        <div id="header" >
             <h1>Hangman Game</h1>
+            <div class="name">{{playerName}}</div>
+            <div><span class="time" id="time">00:30</span></div>
+        </div>
+        <div id="content" >
             <div class="word" >
                 <div class="letter"></div>
             </div>
@@ -119,6 +121,18 @@
                     <div class="letter">{{letter}}</div>
                 {% endfor %}
             </div>
+        </div>
+        <div class="hidden" id="gameEndSubmit" style="display: none;">
+            <form name="submitForm" action="{% url 'savegame' %}" method="post">
+                {% csrf_token %}
+                <input type="text" id="username" name="username" required="True">
+                <input type="text" id="duration" name="duration" required="True">
+                <input type="text" id="attempts" name="attempts" required="True">
+                <input type="text" id="rightAttempts" name="rightAttempts" required="True">
+                <input type="text" id="result" name="result" required="True">
+                <input type="checkbox" id="isTimeCounted" name="isTimeCounted">
+                <input  type="submit">
+            </form>
         </div>
     </body>
 </html>

@@ -3,20 +3,19 @@
 <html lang="en">
     <head>
         <title>Hang Man</title>
-        <!-- <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded',()=> {
-                document.querySelector('#newGame').onclick = function(){
-                    if(document.querySelector('#name').value != ""){
-                        var name = document.querySelector('#name').value;
-                        window.open(`newgame/${name}`,true);
-                    }
-                    else{
-                        alert('name can not be empty');
-                    }
-                }
-            })
-        </script> -->
         <link href="{% static 'hangman/styles.css' %}" rel="stylesheet">
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                var name = "{{name}}";
+                var isTimeCounted = "{{isTimeCounted}}"
+                if(isTimeCounted){
+                    document.querySelector('#isTimeCounted').value = true;
+                }
+                if(name != null){
+                    document.getElementById("username").value = name;
+                }
+            });
+        </script>
     </head>
     <body>
         <h1>please enter your username</h1>
@@ -25,8 +24,26 @@
         {% endif %}
         <form action="{% url 'newGame' %}" method="post">
             {% csrf_token %}
-            <input type="text" name="username" placeholder="Username" required="True">
+            <input type="checkbox" id="isTimeCounted" name="isTimeCounted">
+            <label>play with time?</label><br>
+            <input type="text" id="username" name="username" required="True">
             <input type="submit">
         </form>
+        
+        {% if games %}
+        <div class="resultHeader">
+            <div class="playerName">Name : {{name}}</div>
+            <div class="playerGames">Result : {{result}}</div>
+            <div class="playerName">Play mode : {{isTimeCounted}}</div>
+        </div>
+        <div class="result">
+            <ul>
+                <li> duration : Attempts : Right Tabs : Wrong Tabs : result : Date</li>
+                {% for game in games %}
+                    <li>{{game.duration}} : {{game.attempts}} : {{game.rightAttempts}} : {{game.wrongAttempts}} : {{game.result}} : {{game.date}}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
     </body>
 </html>
